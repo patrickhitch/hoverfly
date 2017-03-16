@@ -55,7 +55,7 @@ var _ = Describe("hoverctl flush cache", func() {
 		hoverfly.Start("-disable-cache")
 		output := functional_tests.Run(hoverctlBinary, "flush", "--force")
 
-		Expect(output).To(ContainSubstring("Cache was not set on Hoverfly"))
+		Expect(output).To(ContainSubstring("No cache set"))
 	})
 
 })

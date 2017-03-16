@@ -96,7 +96,7 @@ func (h *Hoverfly) DeleteSimulations() error {
 	defer response.Body.Close()
 
 	if response.StatusCode != 200 {
-		return errors.New("Simulations were not deleted from Hoverfly")
+		return h.handlerError(response)
 	}
 
 	return nil
@@ -200,7 +200,7 @@ func (h *Hoverfly) SetMiddleware(binary, script, remote string) (v2.MiddlewareVi
 	}
 
 	if response.StatusCode == 403 {
-		return v2.MiddlewareView{}, errors.New("Cannot change the mode of Hoverfly when running as a webserver")
+		return v2.MiddlewareView{}, h.handlerError(response)
 	}
 
 	if response.StatusCode != 200 {
@@ -242,7 +242,7 @@ func (h *Hoverfly) FlushCache() error {
 	}
 
 	if response.StatusCode != 200 {
-		return errors.New("Cache was not set on Hoverfly")
+		return h.handlerError(response)
 	}
 
 	return nil
