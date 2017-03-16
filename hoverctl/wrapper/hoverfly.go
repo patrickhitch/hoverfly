@@ -508,7 +508,14 @@ func (h Hoverfly) doRequest(method, url, body string) (*http.Response, error) {
 		return nil, errors.New("Could not communicate with Hoverfly")
 	}
 
-	response, err := h.httpClient.Do(httpRequest)
+	fmt.Println("incoming")
+	fmt.Println(httpRequest)
+
+	timeout := time.Duration(5 * time.Second)
+	client := http.Client{
+		Timeout: timeout,
+	}
+	response, err := client.Do(httpRequest)
 	if err != nil {
 		log.Debug(err.Error())
 		return nil, errors.New("Could not communicate with Hoverfly")
