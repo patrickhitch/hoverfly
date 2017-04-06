@@ -17,17 +17,19 @@ var _ = Describe("hoverctl login", func() {
 		password = "ft_password"
 	)
 
-	Context("logging into Hoverfly", func() {
+	BeforeEach(func() {
+		hoverfly = functional_tests.NewHoverfly()
+		hoverfly.Start("-auth", "-username", username, "-password", password)
+	})
+
+	AfterEach(func() {
+		hoverfly.Stop()
+	})
+
+	Context("logging into Hoverfly using a target", func() {
 
 		BeforeEach(func() {
-			hoverfly = functional_tests.NewHoverfly()
-			hoverfly.Start("-auth", "-username", username, "-password", password)
-
 			functional_tests.Run(hoverctlBinary, "targets", "create", "--target", "default", "--admin-port", hoverfly.GetAdminPort())
-		})
-
-		AfterEach(func() {
-			hoverfly.Stop()
 		})
 
 		It("should log you in successfully with correct credentials", func() {
@@ -55,26 +57,32 @@ var _ = Describe("hoverctl login", func() {
 		})
 	})
 
-	Context("logging into Hoverfly with no targets", func() {
-		It("should error nicely if there are no targets", func() {
-			functional_tests.Run(hoverctlBinary, "targets", "delete", "-f", "--target", "default")
-			output := functional_tests.Run(hoverctlBinary, "login", "--username", username, "--password", password)
+	Context("logging into Hoverfly with no target", func() {
+		It("should log you in successfully with correct credentials", func() {
+			output := functional_tests.Run(hoverctlBinary, "login", "-f", "--username", username, "--password", password, "--admin-port", hoverfly.GetAdminPort())
 
-			Expect(output).To(ContainSubstring("Cannot login without a target"))
+			Expect(output).To(ContainSubstring("Login successful"))
+		})
+
+		It("Should create a target", func() {
+			functional_tests.Run(hoverctlBinary, "login", "-f",
+				"--target", "new-target",
+				"--username", username,
+				"--password", password,
+				"--admin-port", hoverfly.GetAdminPort(),
+			)
+
+			output := functional_tests.Run(hoverctlBinary, "targets")
+
+			targets := functional_tests.TableToSliceMapStringString(output)
+			Expect(targets["new-target"]["ADMIN PORT"]).To(Equal(hoverfly.GetAdminPort()))
 		})
 	})
 
-	Context("needing to log in", func() {
+	Context("other commands that require logging in", func() {
 
 		BeforeEach(func() {
-			hoverfly = functional_tests.NewHoverfly()
-			hoverfly.Start("-auth", "-username", username, "-password", password)
-
 			functional_tests.Run(hoverctlBinary, "targets", "create", "--target", "no-auth", "--admin-port", hoverfly.GetAdminPort())
-		})
-
-		AfterEach(func() {
-			hoverfly.Stop()
 		})
 
 		It("should error when getting the mode", func() {

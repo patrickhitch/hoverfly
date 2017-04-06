@@ -19,7 +19,19 @@ Login to Hoverfly"
 	`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		checkTargetAndExit(target, "Cannot login without a target")
+		if target == nil {
+			var err error
+			target, err = wrapper.NewTarget(targetNameFlag, hostFlag, adminPortFlag, proxyPortFlag)
+			handleIfError(err)
+		}
+
+		if adminPortFlag != 0 {
+			target.AdminPort = adminPortFlag
+		}
+
+		if hostFlag != "" {
+			target.Host = hostFlag
+		}
 
 		if username == "" {
 			username = askForInput("Username", false)
